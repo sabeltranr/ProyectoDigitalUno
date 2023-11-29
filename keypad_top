@@ -1,0 +1,59 @@
+// top-level module
+module keypad_top(
+    input clk,
+    input [7:0] JA,
+    output [6:0] seg,
+    output [3:0] an,
+    output reg led,
+    output reg buzzer
+    );
+ 
+    // interconnect wiring
+    wire [3:0] key;
+     
+    // only using 1 digit of sseg display
+    assign an = 4'b1110;
+         
+    // instantiate the keypad circuit
+    pmod_keypad keypad(
+        .clk(clk), 
+        .col(JA[3:0]), 
+        .row(JA[7:4]), 
+        .key(key)
+    );
+ 
+    // instantiate the display circuit     
+    sseg_display display(
+        .hex(key),
+        .seg(seg)
+    );
+    
+    reg [3:0] key_array [0:3] ; //creación arreglo donde se guardaran las teclas
+    reg [3:0] contrasenaFija [0:3] ;//contraseña fija 
+    initial begin
+        contrasenaFija[0] = 4'b0001;  // 1
+        contrasenaFija[1] = 4'b0010;  // 2
+        contrasenaFija[2] = 4'b0011;  // 3
+        contrasenaFija[3] = 4'b0100;  // 4
+    end
+     initial begin
+        key_array[0] = 4'b0000;  // 1
+        key_array[1] = 4'b0010;  // 2
+        key_array[2] = 4'b0011;  // 3
+        key_array[3] = 4'b0100;  // 4
+    end
+    
+ 
+     //comparador de claves (FUNCIONA)
+   always @ (*) begin
+        if ((key_array[0] === contrasenaFija[0]) && (key_array[1] === contrasenaFija[1]) && 
+            (key_array[2] === contrasenaFija[2]) && (key_array[3] === contrasenaFija[3])) begin //Comparar si cada item del arrelo es logicamente igual 
+            led = 0;  // Apagar el LED si los arrays son iguales
+            buzzer = 0; //apagar el buzzer si son diferentes 
+        end else begin
+            led = 1;  // Prender el LED si los arrays son diferentes
+            buzzer = 1; //Prender el buzzer si son diferentes
+        end
+    end
+    
+ endmodule
